@@ -16,7 +16,11 @@
       overflow: hidden;     /* Prevent scrolling */
     }
     header {
+      position: fixed;   /* Fix it at the top */
+      top: 0;
+      left: 0;
       width: 100%;
+      z-index: 10000;    /* A high number to ensure it's above other elements */
       background-color: #333;
       color: white;
       padding: 10px 20px;
@@ -24,8 +28,6 @@
       justify-content: space-between;
       align-items: center;
       box-sizing: border-box;
-      position: relative; /* Establish a stacking context */
-      z-index: 1000;      /* A high value to ensure it's above the canvas */
     }
     h1 {
       margin: 0;
@@ -52,12 +54,14 @@
     /* Updated canvas styling: The canvas starts below the header
        and its height is computed so it doesn't reach into the controls area. */
     #fountainCanvas {
-      position: absolute; /* Absolute position for proper layering */
-      top: 70px; /* Adjust this based on your header height */
+      position: absolute;
+      top: 70px; /* Starts below the fixed header */
       left: 0;
       right: 0;
-      height: calc(100vh - 70px - 80px); /* Adjust this to ensure space for controls */
-      z-index: 1; /* Keep canvas behind controls */
+      height: calc(100vh - 70px - 80px); /* 70px for header, 80px reserved for controls */
+      border: 1px solid #555;
+      box-sizing: border-box;
+      z-index: 1; /* Make sure it stays below the header and controls */
     }
     /* Controls container */
     .controls {
