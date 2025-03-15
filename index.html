@@ -46,15 +46,14 @@
       border-radius: 5px;
       width: 250px;
     }
-    /* Position canvas to fill available space */
+    /* Updated canvas styling: The canvas starts below the header
+       and its height is computed so it doesn't reach into the controls area. */
     #fountainCanvas {
       position: absolute;
-      top: 70px;   /* Leave room for header */
-      bottom: 100px; /* Leave room for controls */
+      top: 70px;  /* Adjust if your header's height changes */
       left: 0;
       right: 0;
-      width: 100%;
-      height: auto;
+      height: calc(100vh - 70px - 80px); /* 70px header + 80px reserved for controls */
       border: 1px solid #555;
       box-sizing: border-box;
     }
