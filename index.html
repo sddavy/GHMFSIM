@@ -49,25 +49,23 @@
     /* Updated canvas styling: The canvas starts below the header
        and its height is computed so it doesn't reach into the controls area. */
     #fountainCanvas {
-      position: absolute;
-      top: 70px;  /* Adjust if your header's height changes */
+      position: absolute; /* Absolute position for proper layering */
+      top: 70px; /* Adjust this based on your header height */
       left: 0;
       right: 0;
-      height: calc(100vh - 70px - 80px); /* 70px header + 80px reserved for controls */
-      border: 1px solid #555;
-      z-index: 1; /* Ensure canvas is behind the controls */
-      box-sizing: border-box;
+      height: calc(100vh - 70px - 80px); /* Adjust this to ensure space for controls */
+      z-index: 1; /* Keep canvas behind controls */
     }
     /* Controls container */
     .controls {
-      position: absolute;
+      position: absolute; /* Absolute position to place controls properly */
       bottom: 20px;
       left: 20px;
       right: 20px;
       display: flex;
       align-items: center;
-      z-index: 9999; /* Ensure controls are on top of the canvas */
       justify-content: space-between;
+      z-index: 9999; /* Ensure controls are on top of canvas */
     }
     .main-controls {
       flex: 1;
