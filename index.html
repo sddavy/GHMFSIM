@@ -47,13 +47,14 @@
             padding: 12px 20px;
             font-size: 18px;
             cursor: pointer;
-            background-color: #4CAF50;
+            background-color: #007bff; /* Darker blue */
             color: white;
             border: none;
             border-radius: 5px;
+            margin-left: 10px; /* Space between the button and the left side */
         }
         .play-pause-btn:hover {
-            background-color: #45a049;
+            background-color: #0056b3; /* Darker blue on hover */
         }
         .progress-container {
             width: 100%;
@@ -63,12 +64,23 @@
             position: relative;
             cursor: pointer;
             border-radius: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         .progress-bar {
             width: 0;
             height: 100%;
-            background-color: #4CAF50;
+            background-color: #007bff; /* Darker blue */
             border-radius: 5px;
+        }
+        .progress-circle {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: #007bff;
+            border-radius: 50%;
+            top: -5px; /* Make sure it's centered on the progress bar */
         }
     </style>
 </head>
@@ -85,12 +97,14 @@
         <button class="play-pause-btn" id="playPauseBtn">Play</button>
         <div class="progress-container" id="progressContainer">
             <div class="progress-bar" id="progressBar"></div>
+            <div class="progress-circle" id="progressCircle"></div> <!-- Circle added here -->
         </div>
     </div>
 
     <script>
         const playPauseBtn = document.getElementById('playPauseBtn');
         const progressBar = document.getElementById('progressBar');
+        const progressCircle = document.getElementById('progressCircle');
         const progressContainer = document.getElementById('progressContainer');
         const ctlFileInput = document.getElementById('ctl-file');
         const audioFileInput = document.getElementById('audio-file');
@@ -132,7 +146,7 @@
 
         function handleCtlFileUpload(event) {
             const file = event.target.files[0];
-            if (file && file.type === "text/plain") {
+            if (file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     ctlData = e.target.result;
@@ -151,6 +165,7 @@
                 const currentTime = audioElement.currentTime;
                 const progress = (currentTime / duration) * 100;
                 progressBar.style.width = progress + "%";
+                progressCircle.style.left = `calc(${progress}% - 10px)`; // Move the circle along the progress bar
 
                 if (currentTime >= duration) {
                     clearInterval(interval);
@@ -164,6 +179,7 @@
             const newTime = (clickPosition / progressWidth) * audioElement.duration;
             audioElement.currentTime = newTime;
             progressBar.style.width = (clickPosition / progressWidth) * 100 + "%";
+            progressCircle.style.left = `calc(${(clickPosition / progressWidth) * 100}% - 10px)`;
         }
     </script>
 </body>
