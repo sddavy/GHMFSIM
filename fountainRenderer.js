@@ -1,97 +1,55 @@
-// fountainRenderer.js
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.158/build/three.module.js';
 
-class FountainRenderer {
-  constructor(canvasId) {
-    this.canvas = document.getElementById(canvasId);
-    if (!this.canvas) {
-      throw new Error("Canvas element not found");
-    }
-    this.ctx = this.canvas.getContext("2d");
-    this.isPlaying = false;
-    this.animationFrameId = null;
-    
-    // Set initial size and bind resize events.
-    this.resizeCanvas();
-    window.addEventListener("resize", () => this.resizeCanvas());
-  }
-  
-  resizeCanvas() {
-    // Use the canvas's bounding rect to set its width and height.
-    const rect = this.canvas.getBoundingClientRect();
-    this.canvas.width = rect.width;
-    this.canvas.height = rect.height;
-    // Re-render the scene on resize.
-    this.render();
-  }
-  
-  render() {
-    // Basic static fountain rendering.
-    const ctx = this.ctx;
-    const width = this.canvas.width;
-    const height = this.canvas.height;
-    ctx.clearRect(0, 0, width, height);
-    
-    // Draw a simple fountain shape (a semi-circular arc at the bottom center)
-    const gradient = ctx.createRadialGradient(width / 2, height, 10, width / 2, height, 50);
-    gradient.addColorStop(0, "rgba(0, 150, 255, 0.8)");
-    gradient.addColorStop(1, "rgba(0, 150, 255, 0)");
-    ctx.fillStyle = gradient;
-    ctx.beginPath();
-    ctx.arc(width / 2, height, 50, Math.PI, 2 * Math.PI);
-    ctx.fill();
-  }
-  
-  update(data) {
-    // Optionally update fountain parameters based on CTL data.
-    console.log("Updating fountain with data:", data);
-    // For now, simply re-render.
-    this.render();
-  }
-  
-  play() {
-    this.isPlaying = true;
-    this.animate();
-    console.log("Fountain animation started");
-  }
-  
-  pause() {
-    this.isPlaying = false;
-    if (this.animationFrameId) {
-      cancelAnimationFrame(this.animationFrameId);
-    }
-    console.log("Fountain animation paused");
-  }
-  
-  animate() {
-    if (!this.isPlaying) return;
-    this.renderAnimation();
-    this.animationFrameId = requestAnimationFrame(() => this.animate());
-  }
-  
-  renderAnimation() {
-    // Example animation: a simple moving water ripple effect.
-    const ctx = this.ctx;
-    const width = this.canvas.width;
-    const height = this.canvas.height;
-    ctx.clearRect(0, 0, width, height);
-    
-    const time = Date.now() * 0.002;
-    // Create a ripple effect by modulating the fountain radius.
-    const ripple = Math.sin(time) * 10;
-    const baseRadius = 50;
-    
-    const gradient = ctx.createRadialGradient(
-      width / 2, height, 10 + ripple, 
-      width / 2, height, baseRadius + ripple
-    );
-    gradient.addColorStop(0, "rgba(0, 150, 255, 0.8)");
-    gradient.addColorStop(1, "rgba(0, 150, 255, 0)");
-    
-    ctx.fillStyle = gradient;
-    ctx.beginPath();
-    ctx.arc(width / 2, height, baseRadius + ripple, Math.PI, 2 * Math.PI);
-    ctx.fill();
-  }
+// Scene setup
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer();
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
+
+// Lake (water plane)
+const lakeGeometry = new THREE.PlaneGeometry(100, 100);
+const lakeMaterial = new THREE.MeshPhongMaterial({ color: 0x1e90ff, side: THREE.DoubleSide, transparent: true, opacity: 0.7 });
+const lake = new THREE.Mesh(lakeGeometry, lakeMaterial);
+lake.rotation.x = -Math.PI / 2;
+lake.position.y = -1;
+scene.add(lake);
+
+// Fountain Base
+const baseGeometry = new THREE.CylinderGeometry(3, 3, 0.5, 32);
+const baseMaterial = new THREE.MeshPhongMaterial({ color: 0x555555 });
+const base = new THREE.Mesh(baseGeometry, baseMaterial);
+scene.add(base);
+
+// Water Jets
+const jets = [];
+const jetMaterial = new THREE.MeshBasicMaterial({ color: 0x00aaff, transparent: true, opacity: 0.8 });
+for (let i = 0; i < 5; i++) {
+    const jetGeometry = new THREE.CylinderGeometry(0.2, 0.2, 5, 16);
+    const jet = new THREE.Mesh(jetGeometry, jetMaterial);
+    jet.position.set(Math.cos(i * (Math.PI / 2.5)) * 1.5, 2.5, Math.sin(i * (Math.PI / 2.5)) * 1.5);
+    scene.add(jet);
+    jets.push(jet);
 }
 
-export default FountainRenderer;
+// Lighting
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+scene.add(ambientLight);
+const spotlight = new THREE.SpotLight(0xffffff, 1, 50, Math.PI / 4, 0.5, 2);
+spotlight.position.set(0, 10, 10);
+scene.add(spotlight);
+
+// Camera Position
+camera.position.set(0, 5, 20);
+camera.lookAt(0, 2, 0);
+
+// Animation loop
+function animate() {
+    requestAnimationFrame(animate);
+    jets.forEach((jet, index) => {
+        jet.scale.y = 1 + 0.3 * Math.sin(Date.now() * 0.005 + index);
+    });
+    renderer.render(scene, camera);
+}
+
+animate();
