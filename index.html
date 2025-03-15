@@ -55,13 +55,13 @@
        and its height is computed so it doesn't reach into the controls area. */
     #fountainCanvas {
       position: absolute;
-      top: 70px; /* Starts below the fixed header */
+      top: 70px; /* below header */
       left: 0;
       right: 0;
-      height: calc(100vh - 70px - 80px); /* 70px for header, 80px reserved for controls */
-      border: 1px solid #555;
-      box-sizing: border-box;
-      z-index: 1; /* Make sure it stays below the header and controls */
+      height: calc(100vh - 70px - 80px); /* header + controls */
+      z-index: 1;
+      pointer-events: none;  /* prevents canvas from capturing clicks */
+
     }
     /* Controls container */
     .controls {
