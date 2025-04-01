@@ -218,6 +218,13 @@
     soundBtn.addEventListener('click', toggleVolumeSlider);
     volumeRange.addEventListener('input', adjustVolume);
 
+    document.addEventListener("keydown", function(event) {
+      if (event.code === "Space") {
+        event.preventDefault(); // Prevent page from scrolling when space is pressed
+        togglePlayPause();
+      }
+    });
+    
     function togglePlayPause() {
       if (!audioElement) {
         alert("Please upload an audio file first.");
