@@ -116,31 +116,39 @@
       background-color: #0056b3;
     }
     /* Volume slider on the right side */
-    .volume-slider {
-      display: none;
-      position: absolute;
-      bottom: 50px;
-      right: 20px;
-      background-color: #333;
-      border-radius: 5px;
-      padding: 10px;
-      box-sizing: border-box;
-    }
     .volume-range {
       -webkit-appearance: slider-vertical;
       writing-mode: bt-lr;
-      width: 10px;
+      width: 4px; /* Thinner track */
       height: 100px;
       background-color: #444;
       border-radius: 10px;
+      position: relative;
+      display: block;
+      margin: 0 auto; /* Centering */
     }
+    
+    /* Ensure the slider track remains the same color on hover */
+    .volume-range::-webkit-slider-runnable-track {
+      background-color: #444;
+      width: 4px;
+    }
+    
+    .volume-range:hover::-webkit-slider-runnable-track {
+      background-color: #444;
+    }
+    
+    /* Center the slider thumb over the track */
     .volume-range::-webkit-slider-thumb {
+      -webkit-appearance: none;
       background-color: #007bff;
       border-radius: 50%;
       border: none;
-      width: 20px;
-      height: 20px;
+      width: 16px;
+      height: 16px;
       cursor: pointer;
+      margin-left: -6px; /* Adjusted offset to center the circle */
+    }
     }
   </style>
 </head>
