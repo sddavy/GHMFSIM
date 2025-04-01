@@ -46,15 +46,17 @@
       border-radius: 5px;
       width: 250px;
     }
+    /* Canvas styling */
     #fountainCanvas {
       position: absolute;
-      top: 70px;
+      top: 70px;  /* Header height */
       left: 0;
       right: 0;
-      height: calc(100vh - 70px - 80px);
+      height: calc(100vh - 70px - 80px); /* Header + reserved controls area */
       border: 1px solid #555;
       box-sizing: border-box;
     }
+    /* Controls container */
     .controls {
       position: absolute;
       bottom: 20px;
@@ -63,6 +65,86 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+    }
+    .main-controls {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+    }
+    .play-pause-btn {
+      padding: 8px 12px;
+      font-size: 18px;
+      cursor: pointer;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+    .play-pause-btn:hover {
+      background-color: #0056b3;
+    }
+    .progress-container {
+      flex: 1;
+      height: 10px;
+      background-color: #444;
+      position: relative;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    .progress-bar {
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      background-color: #007bff;
+      border-radius: 5px;
+    }
+    .progress-circle {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background-color: #007bff;
+      border-radius: 50%;
+      top: -5px;
+    }
+    .sound-btn {
+      margin-left: 10px;
+      background-color: #007bff;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      color: white;
+      cursor: pointer;
+    }
+    .sound-btn:hover {
+      background-color: #0056b3;
+    }
+    .volume-slider {
+      display: none;
+      position: absolute;
+      bottom: 50px;
+      right: 20px;
+      background-color: #333;
+      border-radius: 5px;
+      padding: 10px;
+    }
+    .volume-range {
+      -webkit-appearance: slider-vertical;
+      writing-mode: bt-lr;
+      width: 10px;
+      height: 100px;
+      background-color: #444;
+      border-radius: 10px;
+    }
+    .volume-range::-webkit-slider-thumb {
+      background-color: #007bff;
+      border-radius: 50%;
+      border: none;
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -76,21 +158,49 @@
       <input type="file" id="audio-file" accept="audio/*" />
     </div>
   </header>
+
+  <!-- Canvas for fountain rendering -->
   <canvas id="fountainCanvas"></canvas>
+
+  <!-- Controls for audio playback -->
   <div class="controls">
-    <button class="play-pause-btn" id="playPauseBtn">▶</button>
+    <div class="main-controls">
+      <button class="play-pause-btn" id="playPauseBtn">▶</button>
+      <div class="progress-container" id="progressContainer">
+        <div class="progress-bar" id="progressBar"></div>
+        <div class="progress-circle" id="progressCircle"></div>
+      </div>
+    </div>
+    <button class="sound-btn" id="soundBtn">🔊</button>
   </div>
+
+  <!-- Volume slider -->
+  <div class="volume-slider" id="volumeSlider">
+    <input type="range" id="volumeRange" class="volume-range" min="0" max="1" step="0.01" value="1" />
+  </div>
+
   <script type="module">
     import FountainRenderer from "./fountainRenderer.js";
-
+    
     const fountain = new FountainRenderer("fountainCanvas");
+    
+    // UI Elements
     const playPauseBtn = document.getElementById('playPauseBtn');
+    const progressContainer = document.getElementById('progressContainer');
+    const progressBar = document.getElementById('progressBar');
+    const progressCircle = document.getElementById('progressCircle');
+    const ctlFileInput = document.getElementById('ctl-file');
     const audioFileInput = document.getElementById('audio-file');
+    const soundBtn = document.getElementById('soundBtn');
+    const volumeSlider = document.getElementById('volumeSlider');
+    const volumeRange = document.getElementById('volumeRange');
+    
     let audioElement;
     let isPlaying = false;
     
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
     
+    // Play/Pause button handling.
     playPauseBtn.addEventListener('click', () => {
       if (!audioElement) {
         alert("Please upload an audio file first.");
@@ -107,10 +217,12 @@
         audioElement.play().catch(error => console.warn("Playback failed:", error));
         fountain.play();
         playPauseBtn.textContent = '❚❚';
+        startProgressBar();
       }
       isPlaying = !isPlaying;
     });
-
+    
+    // Handle audio file upload.
     audioFileInput.addEventListener('change', (event) => {
       const file = event.target.files[0];
       if (file && file.type.startsWith("audio/")) {
@@ -128,8 +240,53 @@
         alert("Please upload a valid audio file.");
       }
     });
-
-    const volumeRange = document.getElementById('volumeRange');
+    
+    // Handle CTL file upload.
+    ctlFileInput.addEventListener('change', (event) => {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const ctlData = e.target.result;
+          console.log("CTL file contents:", ctlData);
+          fountain.update(ctlData);
+        };
+        reader.readAsText(file);
+      } else {
+        alert("Please upload a valid .ctl file.");
+      }
+    });
+    
+    // Update progress bar while audio is playing.
+    function startProgressBar() {
+      const duration = audioElement.duration;
+      const interval = setInterval(() => {
+        const currentTime = audioElement.currentTime;
+        const progress = (currentTime / duration) * 100;
+        progressBar.style.width = progress + "%";
+        progressCircle.style.left = `calc(${progress}% - 10px)`;
+        if (currentTime >= duration) {
+          clearInterval(interval);
+        }
+      }, 100);
+    }
+    
+    // Allow scrubbing on the progress container.
+    progressContainer.addEventListener('click', (event) => {
+      const progressWidth = progressContainer.offsetWidth;
+      const clickPosition = event.offsetX;
+      const newTime = (clickPosition / progressWidth) * audioElement.duration;
+      audioElement.currentTime = newTime;
+      progressBar.style.width = (clickPosition / progressWidth) * 100 + "%";
+      progressCircle.style.left = `calc(${(clickPosition / progressWidth) * 100}% - 10px)`;
+    });
+    
+    // Toggle volume slider display.
+    soundBtn.addEventListener('click', () => {
+      volumeSlider.style.display = volumeSlider.style.display === 'block' ? 'none' : 'block';
+    });
+    
+    // Adjust volume from slider.
     volumeRange.addEventListener('input', () => {
       if (audioElement) {
         audioElement.volume = volumeRange.value;
