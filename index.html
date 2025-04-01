@@ -82,7 +82,7 @@
       cursor: pointer;
       border-radius: 5px;
       margin: 0 20px;
-      overflow: hidden;
+      overflow: visible; /* Changed from hidden to visible */
     }
     .progress-bar {
       position: absolute;
@@ -98,10 +98,11 @@
       position: absolute;
       width: 20px;
       height: 20px;
-      background-color: #007bff;
+      background-color: white; /* Dot is white */
       border-radius: 50%;
       top: -5px;
       left: 0; /* Always at the far left initially */
+      z-index: 10; /* Place the dot above everything else */
     }
     .sound-btn {
       background-color: #007bff;
@@ -251,7 +252,7 @@
         const currentTime = audioElement.currentTime;
         const progress = (currentTime / duration) * 100;
         progressBar.style.width = progress + "%";
-        progressCircle.style.left = calc(${progress}% - 10px);
+        progressCircle.style.left = `calc(${progress}% - 10px)`;
         if (currentTime >= duration) {
           clearInterval(interval);
         }
@@ -264,8 +265,9 @@
       const clickPosition = event.offsetX;
       const newTime = (clickPosition / progressWidth) * audioElement.duration;
       audioElement.currentTime = newTime;
-      progressBar.style.width = (clickPosition / progressWidth) * 100 + "%";
-      progressCircle.style.left = calc(${(clickPosition / progressWidth) * 100}% - 10px);
+      const progressPercent = (clickPosition / progressWidth) * 100;
+      progressBar.style.width = progressPercent + "%";
+      progressCircle.style.left = `calc(${progressPercent}% - 10px)`;
     }
 
     function toggleVolumeSlider() {
