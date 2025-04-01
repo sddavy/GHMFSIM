@@ -29,6 +29,21 @@
       justify-content: space-between;
       align-items: center;
       box-sizing: border-box;
+  
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background-color: #333;
+      padding: 10px 20px;
+      color: white;
+    }
+    
+    .header-logo {
+      height: 40px; /* Adjust as needed */
+      margin-right: 15px;
+    }
+
     }
     h1 {
       margin: 0;
@@ -165,6 +180,7 @@
 </head>
 <body>
   <header>
+    <img src="assets/logo.png" alt="Logo" class="header-logo">
     <h1>Grand Haven Musical Fountain Simulator</h1>
     <div class="upload-inputs">
       <div class="upload-label">Upload .ctl:</div>
@@ -173,6 +189,7 @@
       <input type="file" id="audio-file" accept=".wav" />
     </div>
   </header>
+
 
   <!-- Controls for audio playback -->
   <div class="controls">
