@@ -47,25 +47,38 @@
       width: 250px;
     }
     /* Canvas styling */
-    #fountainCanvas {
-      position: absolute;
-      top: 70px;  /* Header height */
-      left: 0;
-      right: 0;
-      height: calc(100vh - 70px - 80px); /* Header + reserved controls area */
-      border: 1px solid #555;
-      box-sizing: border-box;
-    }
-    /* Controls container */
-    .controls {
-      position: absolute;
-      bottom: 20px;
-      left: 20px;
-      right: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
+      #fountainCanvas {
+    position: absolute;
+    top: 70px;
+    left: 0;
+    right: 0;
+    height: calc(100vh - 70px - 80px);
+    border: 1px solid #555;
+    box-sizing: border-box;
+    z-index: 1;  /* Lower z-index for the canvas */
+  }
+  
+  .controls {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 10; /* Higher z-index so they appear above the canvas */
+  }
+  
+  .volume-slider {
+    display: none;
+    position: absolute;
+    bottom: 50px;
+    right: 20px;
+    background-color: #333;
+    border-radius: 5px;
+    padding: 10px;
+    z-index: 10; /* Ensure volume slider is on top when displayed */
+  }
     .main-controls {
       flex: 1;
       display: flex;
