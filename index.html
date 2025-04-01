@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -26,16 +26,17 @@
       color: white;
       padding: 10px 20px;
       display: flex;
+      justify-content: space-between;
       align-items: center;
+      margin-left: 30px /* Added this */
       box-sizing: border-box;
     }
-    
-  .header-logo {
-      height: 50px; /* Adjust as needed */
-      margin-left: 8px; /* 15px from the left edge of the screen */
-      margin-right: 18px; /* Space between the logo and text */
+
+    .header-logo {
+      height: 45px; /* Adjust as needed */
+      margin-right: 15px;
     }
-    
+
     h1 {
       margin: 0;
       font-size: 24px;
@@ -58,7 +59,7 @@
       border-radius: 5px;
       width: 250px;
     }
-    /* Controls container now has side padding */
+
     .controls {
       position: absolute;
       bottom: 20px;
@@ -70,7 +71,7 @@
       justify-content: space-between;
       box-sizing: border-box;
     }
-    .play-pause-btn {
+    .skip-start-btn, .skip-back-btn {
       padding: 12px 20px;
       font-size: 18px;
       cursor: pointer;
@@ -79,9 +80,23 @@
       border: none;
       border-radius: 5px;
     }
-    .play-pause-btn:hover {
-      background-color: #0056b3;
+    .play-pause-btn {
+      padding: 12px 20px;
+      font-size: 18px;
+      cursor: pointer;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      width: 60px;  /* Fixed width to prevent shrinking */
+      height: 40px; /* Fixed height to prevent shrinking */
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
+
+    }
+
     .progress-container {
       flex: 1;
       height: 10px;
@@ -90,28 +105,29 @@
       cursor: pointer;
       border-radius: 5px;
       margin: 0 20px;
-      overflow: visible; /* Ensure the dot is fully visible */
+      overflow: visible;
     }
     .progress-bar {
       position: absolute;
       left: 0;
       top: 0;
       height: 100%;
-      width: 0; /* Start with 0 width */
+      width: 0;
       background-color: #007bff;
       border-radius: 5px;
-      display: none; /* Hidden until an audio file is loaded */
+      display: none;
     }
     .progress-circle {
       position: absolute;
       width: 20px;
       height: 20px;
-      background-color: white; /* Dot is white */
+      background-color: white;
       border-radius: 50%;
       top: -5px;
-      left: 0; /* Always at the far left initially */
-      z-index: 10; /* Place the dot above everything else */
+      left: 0;
+      z-index: 10;
     }
+
     .sound-btn {
       background-color: #007bff;
       padding: 10px;
@@ -123,7 +139,7 @@
     .sound-btn:hover {
       background-color: #0056b3;
     }
-    /* Volume slider on the right side */
+
     .volume-slider {
       display: none;
       position: absolute;
@@ -137,26 +153,19 @@
     .volume-range {
       -webkit-appearance: slider-vertical;
       writing-mode: bt-lr;
-      width: 4px; /* Thinner track */
+      width: 4px;
       height: 100px;
       background-color: #444;
       border-radius: 10px;
       position: relative;
       display: block;
-      margin: 0 auto; /* Centering */
+      margin: 0 auto;
     }
-    
-    /* Ensure the slider track remains the same color on hover */
+
     .volume-range::-webkit-slider-runnable-track {
       background-color: #444;
       width: 4px;
     }
-    
-    .volume-range:hover::-webkit-slider-runnable-track {
-      background-color: #444;
-    }
-    
-    /* Center the slider thumb over the track */
     .volume-range::-webkit-slider-thumb {
       -webkit-appearance: none;
       background-color: #007bff;
@@ -165,7 +174,6 @@
       width: 16px;
       height: 16px;
       cursor: pointer;
-      margin-left: 0px; /* Adjusted offset to center the circle (used to be -6)*/
     }
   </style>
 </head>
@@ -181,9 +189,10 @@
     </div>
   </header>
 
-
   <!-- Controls for audio playback -->
   <div class="controls">
+    <button class="skip-start-btn" id="skipStartBtn">⏮️</button>
+    <button class="skip-back-btn" id="skipBackBtn">⏪</button>
     <button class="play-pause-btn" id="playPauseBtn">▶</button>
     <div class="progress-container" id="progressContainer">
       <div class="progress-bar" id="progressBar"></div>
@@ -196,6 +205,8 @@
   </div>
 
   <script>
+    const skipStartBtn = document.getElementById('skipStartBtn');
+    const skipBackBtn = document.getElementById('skipBackBtn');
     const playPauseBtn = document.getElementById('playPauseBtn');
     const progressBar = document.getElementById('progressBar');
     const progressCircle = document.getElementById('progressCircle');
@@ -208,8 +219,9 @@
 
     let audioElement;
     let isPlaying = false;
-    let ctlData;
 
+    skipStartBtn.addEventListener('click', skipToStart);
+    skipBackBtn.addEventListener('click', skipBack10);
     playPauseBtn.addEventListener('click', togglePlayPause);
     audioFileInput.addEventListener('change', handleAudioFileUpload);
     ctlFileInput.addEventListener('change', handleCtlFileUpload);
@@ -217,13 +229,8 @@
     soundBtn.addEventListener('click', toggleVolumeSlider);
     volumeRange.addEventListener('input', adjustVolume);
 
-    document.addEventListener("keydown", function(event) {
-      if (event.code === "Space") {
-        event.preventDefault(); // Prevent page from scrolling when space is pressed
-        togglePlayPause();
-      }
-    });
-    
+    document.addEventListener('keydown', handleKeyboardShortcuts);
+
     function togglePlayPause() {
       if (!audioElement) {
         alert("Please upload an audio file first.");
@@ -240,12 +247,38 @@
       isPlaying = !isPlaying;
     }
 
+    function skipToStart() {
+      if (audioElement) {
+        audioElement.currentTime = 0;
+        progressBar.style.width = '0%';
+        progressCircle.style.left = '0';
+      }
+    }
+
+    function skipBack10() {
+      if (audioElement) {
+        audioElement.currentTime = Math.max(0, audioElement.currentTime - 10); 
+        const progressPercent = (audioElement.currentTime / audioElement.duration) * 100;
+        progressBar.style.width = progressPercent + "%";
+        progressCircle.style.left = `calc(${progressPercent}% - 10px)`;
+      }
+    }
+
+    function handleKeyboardShortcuts(event) {
+      if (event.key === 'Enter' || event.key === 'Home') {
+        skipToStart();
+      } else if (event.key === 'ArrowLeft') {
+        skipBack10();
+      } else if (event.key === ' ') { 
+        togglePlayPause();
+      }
+    }
+
     function handleAudioFileUpload(event) {
       const file = event.target.files[0];
       if (file && file.type === "audio/wav") {
         const url = URL.createObjectURL(file);
         audioElement = new Audio(url);
-        // Show progress bar and reset its state.
         progressBar.style.display = 'block';
         progressBar.style.width = '0%';
         progressCircle.style.left = '0';
@@ -254,7 +287,6 @@
           isPlaying = false;
           progressBar.style.width = '0%';
           progressCircle.style.left = '0';
-          // Optionally hide the progress bar when song ends.
           progressBar.style.display = 'none';
         });
       } else {
@@ -267,7 +299,7 @@
       if (file) {
         const reader = new FileReader();
         reader.onload = function(e) {
-          ctlData = e.target.result;
+          const ctlData = e.target.result;
           console.log("CTL file contents:", ctlData);
         };
         reader.readAsText(file);
