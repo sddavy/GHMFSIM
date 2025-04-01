@@ -46,39 +46,27 @@
       border-radius: 5px;
       width: 250px;
     }
-    /* Canvas styling */
-      #fountainCanvas {
-    position: absolute;
-    top: 70px;
-    left: 0;
-    right: 0;
-    height: calc(100vh - 70px - 80px);
-    border: 1px solid #555;
-    box-sizing: border-box;
-    z-index: 1;  /* Lower z-index for the canvas */
-  }
-  
-  .controls {
-    position: absolute;
-    bottom: 20px;
-    left: 20px;
-    right: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    z-index: 10; /* Higher z-index so they appear above the canvas */
-  }
-  
-  .volume-slider {
-    display: none;
-    position: absolute;
-    bottom: 50px;
-    right: 20px;
-    background-color: #333;
-    border-radius: 5px;
-    padding: 10px;
-    z-index: 10; /* Ensure volume slider is on top when displayed */
-  }
+    /* Updated canvas styling: The canvas starts below the header
+       and its height is computed so it doesn't reach into the controls area. */
+    #fountainCanvas {
+      position: absolute;
+      top: 70px;  /* Adjust if your header's height changes */
+      left: 0;
+      right: 0;
+      height: calc(100vh - 70px - 80px); /* 70px header + 80px reserved for controls */
+      border: 1px solid #555;
+      box-sizing: border-box;
+    }
+    /* Controls container */
+    .controls {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      right: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
     .main-controls {
       flex: 1;
       display: flex;
@@ -194,56 +182,50 @@
 
   <script type="module">
     import FountainRenderer from "./fountainRenderer.js";
-    
+
+    // Instantiate the fountain renderer.
     const fountain = new FountainRenderer("fountainCanvas");
-    
-    // UI Elements
+
+    // Get references to UI elements.
     const playPauseBtn = document.getElementById('playPauseBtn');
-    const progressContainer = document.getElementById('progressContainer');
     const progressBar = document.getElementById('progressBar');
     const progressCircle = document.getElementById('progressCircle');
+    const progressContainer = document.getElementById('progressContainer');
     const ctlFileInput = document.getElementById('ctl-file');
     const audioFileInput = document.getElementById('audio-file');
     const soundBtn = document.getElementById('soundBtn');
     const volumeSlider = document.getElementById('volumeSlider');
     const volumeRange = document.getElementById('volumeRange');
-    
+
     let audioElement;
     let isPlaying = false;
-    
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    
+    let ctlData;
+
     // Play/Pause button handling.
     playPauseBtn.addEventListener('click', () => {
       if (!audioElement) {
         alert("Please upload an audio file first.");
         return;
       }
-      if (audioContext.state === "suspended") {
-        audioContext.resume();
-      }
       if (isPlaying) {
         audioElement.pause();
         fountain.pause();
         playPauseBtn.textContent = '▶';
       } else {
-        audioElement.play().catch(error => console.warn("Playback failed:", error));
+        audioElement.play();
         fountain.play();
         playPauseBtn.textContent = '❚❚';
         startProgressBar();
       }
       isPlaying = !isPlaying;
     });
-    
+
     // Handle audio file upload.
     audioFileInput.addEventListener('change', (event) => {
       const file = event.target.files[0];
       if (file && file.type.startsWith("audio/")) {
         const url = URL.createObjectURL(file);
         audioElement = new Audio(url);
-        const audioSource = audioContext.createMediaElementSource(audioElement);
-        audioSource.connect(audioContext.destination);
-        audioElement.addEventListener('canplaythrough', () => console.log("Audio loaded:", audioElement.src));
         audioElement.addEventListener('ended', () => {
           playPauseBtn.textContent = '▶';
           isPlaying = false;
@@ -253,14 +235,14 @@
         alert("Please upload a valid audio file.");
       }
     });
-    
+
     // Handle CTL file upload.
     ctlFileInput.addEventListener('change', (event) => {
       const file = event.target.files[0];
       if (file) {
         const reader = new FileReader();
         reader.onload = (e) => {
-          const ctlData = e.target.result;
+          ctlData = e.target.result;
           console.log("CTL file contents:", ctlData);
           fountain.update(ctlData);
         };
@@ -269,7 +251,7 @@
         alert("Please upload a valid .ctl file.");
       }
     });
-    
+
     // Update progress bar while audio is playing.
     function startProgressBar() {
       const duration = audioElement.duration;
@@ -283,7 +265,7 @@
         }
       }, 100);
     }
-    
+
     // Allow scrubbing on the progress container.
     progressContainer.addEventListener('click', (event) => {
       const progressWidth = progressContainer.offsetWidth;
@@ -293,22 +275,18 @@
       progressBar.style.width = (clickPosition / progressWidth) * 100 + "%";
       progressCircle.style.left = `calc(${(clickPosition / progressWidth) * 100}% - 10px)`;
     });
-    
+
     // Toggle volume slider display.
     soundBtn.addEventListener('click', () => {
       volumeSlider.style.display = volumeSlider.style.display === 'block' ? 'none' : 'block';
     });
-    
+
     // Adjust volume from slider.
     volumeRange.addEventListener('input', () => {
       if (audioElement) {
         audioElement.volume = volumeRange.value;
-        console.log("Volume set to:", audioElement.volume);
-      } else {
-        console.warn("No audio element found!");
       }
     });
   </script>
-  <script type="module" src="fountainRenderer.js"></script>
 </body>
 </html>
