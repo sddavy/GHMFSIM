@@ -50,6 +50,7 @@
       border-radius: 5px;
       width: 250px;
     }
+    /* Controls container now has side padding */
     .controls {
       position: absolute;
       bottom: 20px;
@@ -88,21 +89,19 @@
       left: 0;
       top: 0;
       height: 100%;
-      width: 0;
+      width: 0; /* Start with 0 width */
       background-color: #007bff;
       border-radius: 5px;
-      display: none;
+      display: none; /* Hidden until an audio file is loaded */
     }
     .progress-circle {
       position: absolute;
-      width: 15px;
-      height: 15px;
-      background-color: #fff;
+      width: 20px;
+      height: 20px;
+      background-color: #007bff;
       border-radius: 50%;
-      top: -2.5px;
-      left: 0;
-      transform: translateX(-50%);
-      transition: left 0.1s linear;
+      top: -5px;
+      left: 0; /* Always at the far left initially */
     }
     .sound-btn {
       background-color: #007bff;
@@ -115,6 +114,7 @@
     .sound-btn:hover {
       background-color: #0056b3;
     }
+    /* Volume slider on the right side */
     .volume-slider {
       display: none;
       position: absolute;
@@ -154,6 +154,7 @@
     </div>
   </header>
 
+  <!-- Controls for audio playback -->
   <div class="controls">
     <button class="play-pause-btn" id="playPauseBtn">▶</button>
     <div class="progress-container" id="progressContainer">
@@ -209,18 +210,34 @@
       if (file && file.type === "audio/wav") {
         const url = URL.createObjectURL(file);
         audioElement = new Audio(url);
+        // Show progress bar and reset its state.
         progressBar.style.display = 'block';
         progressBar.style.width = '0%';
-        progressCircle.style.left = '0%';
+        progressCircle.style.left = '0';
         audioElement.addEventListener('ended', () => {
           playPauseBtn.textContent = '▶';
           isPlaying = false;
           progressBar.style.width = '0%';
-          progressCircle.style.left = '0%';
+          progressCircle.style.left = '0';
+          // Optionally hide the progress bar when song ends.
           progressBar.style.display = 'none';
         });
       } else {
         alert("Please upload a valid .wav file.");
+      }
+    }
+
+    function handleCtlFileUpload(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          ctlData = e.target.result;
+          console.log("CTL file contents:", ctlData);
+        };
+        reader.readAsText(file);
+      } else {
+        alert("Please upload a valid .ctl file.");
       }
     }
 
@@ -231,10 +248,11 @@
           clearInterval(interval);
           return;
         }
-        const progress = (audioElement.currentTime / duration) * 100;
+        const currentTime = audioElement.currentTime;
+        const progress = (currentTime / duration) * 100;
         progressBar.style.width = progress + "%";
-        progressCircle.style.left = progress + "%";
-        if (audioElement.currentTime >= duration) {
+        progressCircle.style.left = calc(${progress}% - 10px);
+        if (currentTime >= duration) {
           clearInterval(interval);
         }
       }, 100);
@@ -242,8 +260,12 @@
 
     function scrub(event) {
       if (!audioElement) return;
-      const newTime = (event.offsetX / progressContainer.offsetWidth) * audioElement.duration;
+      const progressWidth = progressContainer.offsetWidth;
+      const clickPosition = event.offsetX;
+      const newTime = (clickPosition / progressWidth) * audioElement.duration;
       audioElement.currentTime = newTime;
+      progressBar.style.width = (clickPosition / progressWidth) * 100 + "%";
+      progressCircle.style.left = calc(${(clickPosition / progressWidth) * 100}% - 10px);
     }
 
     function toggleVolumeSlider() {
