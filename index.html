@@ -71,7 +71,8 @@
       justify-content: space-between;
       box-sizing: border-box;
     }
-    .skip-start-btn, .skip-back-btn {
+    .skip-start-btn,.skip-back-btn {
+      /* Use similar styling without the fixed dimensions */
       padding: 12px 20px;
       font-size: 18px;
       cursor: pointer;
@@ -79,22 +80,24 @@
       color: white;
       border: none;
       border-radius: 5px;
+      /* Optionally, also add flex-shrink: 0 if needed */
+      flex-shrink: 0;
     }
     .play-pause-btn {
-      padding: 12px 20px;
-      font-size: 18px;
-      cursor: pointer;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      width: 60px;  /* Fixed width to prevent shrinking */
-      height: 40px; /* Fixed height to prevent shrinking */
+      width: 60px;  /* Fixed width */
+      height: 40px; /* Fixed height */
       display: flex;
       align-items: center;
       justify-content: center;
-    }
-
+      /* Keep other styling properties */
+      padding: 12px 20px;
+      font-size: 18px;
+      cursor: pointer;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      flex-shrink: 0;  /* Prevent it from shrinking in a flex container */
     }
 
     .progress-container {
