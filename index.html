@@ -82,7 +82,6 @@
       cursor: pointer;
       border-radius: 5px;
       margin: 0 20px;
-      /* Start with no progress */
       overflow: hidden;
     }
     .progress-bar {
@@ -93,6 +92,7 @@
       width: 0; /* Start with 0 width */
       background-color: #007bff;
       border-radius: 5px;
+      display: none; /* Hidden until an audio file is loaded */
     }
     .progress-circle {
       position: absolute;
@@ -101,7 +101,7 @@
       background-color: #007bff;
       border-radius: 50%;
       top: -5px;
-      left: 0; /* Start at left edge */
+      left: 0; /* Always at the far left initially */
     }
     .sound-btn {
       background-color: #007bff;
@@ -210,7 +210,8 @@
       if (file && file.type === "audio/wav") {
         const url = URL.createObjectURL(file);
         audioElement = new Audio(url);
-        // Reset progress bar and scrub circle before playback.
+        // Show progress bar and reset its state.
+        progressBar.style.display = 'block';
         progressBar.style.width = '0%';
         progressCircle.style.left = '0';
         audioElement.addEventListener('ended', () => {
@@ -218,6 +219,8 @@
           isPlaying = false;
           progressBar.style.width = '0%';
           progressCircle.style.left = '0';
+          // Optionally hide the progress bar when song ends.
+          progressBar.style.display = 'none';
         });
       } else {
         alert("Please upload a valid .wav file.");
